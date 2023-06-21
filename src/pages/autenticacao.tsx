@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import AuthInput from "../components/auth/AuthInput";
-import imagemLogin from '../../public/imagemLogin.jpg'
+import imagemLogin from '../../public/images/imagemLogin.jpg'
 import { IconeAtencao } from "../components/icons";
 import useAuth from "../data/hook/useAuth";
 
