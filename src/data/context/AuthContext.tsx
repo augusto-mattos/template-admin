@@ -6,6 +6,9 @@ import Cookies from 'js-cookie'
 
 interface AuthContextProps {
     usuario?: Usuario
+    carregando?: boolean
+    login?: (email: string, senha: string) => Promise<void> 
+    cadastrar?: (email: string, senha: string) => Promise<void> 
     loginGoogle?: () => Promise<void> 
     logout?: () => Promise<void> 
 }
@@ -53,13 +56,39 @@ export function AuthProvider (props) {
         }
     }
 
+    async function login(email, password) {
+        try {
+            setCarregando(true)
+            const resp = await firebase.auth()
+                .signInWithEmailAndPassword(email, password)
+
+            await configurarSessao(resp.user)    
+                route.push('/')
+        } finally {
+            setCarregando(false)
+        }
+    }
+
+    async function cadastrar(email, password) {
+        try {
+            setCarregando(true)
+            const resp = await firebase.auth()
+                .createUserWithEmailAndPassword(email, password)
+
+            await configurarSessao(resp.user)    
+                route.push('/')
+        } finally {
+            setCarregando(false)
+        }
+    }
+
     async function loginGoogle() {
         try {
             setCarregando(true)
             const resp = await firebase.auth().signInWithPopup(
                 new firebase.auth.GoogleAuthProvider()
             )
-            configurarSessao(resp.user)    
+            await configurarSessao(resp.user)    
                 route.push('/')
         } finally {
             setCarregando(false)
@@ -80,12 +109,17 @@ export function AuthProvider (props) {
         if(Cookies.get('admin-template-auth')) {
             const cancel = firebase.auth().onIdTokenChanged(configurarSessao)
             return () => cancel()
+        } else {
+            setCarregando(false)
         }
     }, [])
 
     return (
         <AuthContext.Provider value={{
             usuario,
+            carregando,
+            login,
+            cadastrar,
             loginGoogle,
             logout
         }}>
